@@ -25,11 +25,13 @@ require_once 'rollingCurl.php';
 
 $r = new Rue();
 
-//Including the RollingCurlX class allows you to use all of the 'multi' methods. These will use multiple parallel cUrl requests to get data on complete clans/groups quickly. 
+//Including the RollingCurlX class allows you to use all of the 'multi' methods. 
+//These will use multiple parallel cUrl requests to get data on complete clans/groups quickly. 
 $rcx = new RollingCurlX();
 $r->setMulti($rcx);
 
-//Setting a pug or alt account allows the class to generate session tokens. Adding a token to your requests will yield extra data with the 'details' methods, like online status and world.
+//Setting a pug or alt account allows the class to generate session tokens. 
+//Adding a token to your requests will yield extra data with the 'details' methods, like online status and world.
 $r->setPug("pugemail@gmail.com", "pugpassword", "pugname");
 ```
 
