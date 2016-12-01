@@ -126,10 +126,13 @@ Class Rue {
     public function get_player_outfit($player_name){
         $url = 'http://services.runescape.com/m=avatar-rs/'.$this->normalize_name($player_name).'/appearance.dat';
         $appearance_string = $this->get_url($url);
-
-        $details_url = 'http://services.runescape.com/m=adventurers-log/avatardetails.json?details='.$appearance_string;
-        $result = $this->get_url($details_url);
-        return json_decode($result);
+        if($appearance_string != false){
+            $details_url = 'http://services.runescape.com/m=adventurers-log/avatardetails.json?details='.$appearance_string;
+            $result = $this->get_url($details_url);
+            return json_decode($result);
+        }else{
+            return 'NO PROFILE';
+        }
     }
 
     /*
@@ -145,28 +148,32 @@ Class Rue {
         $subject_list = ["Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction", "Summoning", "Dungeoneering", "Divination", "Invention", "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A. Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest"];
         $url = 'http://services.runescape.com/m=hiscore/index_lite.ws?player='.$this->normalize_name($player_name);
         $result = $this->get_url($url);
-        $list = array();
-        $result = explode("\n", $result);
-        foreach($result as $key => $row){
-            if($key < (count($result)-1)){
-                $row_items = explode(",", $row);
-                if($key < 28){
-                    $list[] = (object)array(
-                        'name' => $subject_list[$key],
-                        'rank' => $row_items[0],
-                        'level' => $row_items[1],
-                        'experience' => $row_items[2]
-                    );
-                }else{
-                    $list[] = (object)array(
-                        'name' => $subject_list[$key],
-                        'rank' => $row_items[0],
-                        'value' => $row_items[1]
-                    );
+        if($result != false){
+            $list = array();
+            $result = explode("\n", $result);
+            foreach($result as $key => $row){
+                if($key < (count($result)-1)){
+                    $row_items = explode(",", $row);
+                    if($key < 28){
+                        $list[] = (object)array(
+                            'name' => $subject_list[$key],
+                            'rank' => $row_items[0],
+                            'level' => $row_items[1],
+                            'experience' => $row_items[2]
+                        );
+                    }else{
+                        $list[] = (object)array(
+                            'name' => $subject_list[$key],
+                            'rank' => $row_items[0],
+                            'value' => $row_items[1]
+                        );
+                    }
                 }
             }
+            return $list;
+        }else{
+            return 'NO PROFILE';
         }
-        return $list;
     }
 
     /*
@@ -181,21 +188,25 @@ Class Rue {
     public function get_clan_list($clan_name){
         $url = 'http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName='.$this->normalize_clan_name($clan_name);
         $result = $this->get_url($url);
-        $clan_list = array();
-        $result = explode("\n", $result);
-        foreach($result as $key => $row){
-            if($key != 0 && $key <= (count($result)-2)){
-                $row_item = explode(",", $row);
-                $name = htmlentities(utf8_encode($row_item[0]));
-                $clan_list[] = (object)array(
-                    'name' => str_replace('&nbsp;', ' ', $name),
-                    'rank' => $row_item[1],
-                    'clan_xp' => $row_item[2],
-                    'clan_kills' => $row_item[3]
-                );
+        if($result != false){
+            $clan_list = array();
+            $result = explode("\n", $result);
+            foreach($result as $key => $row){
+                if($key != 0 && $key <= (count($result)-2)){
+                    $row_item = explode(",", $row);
+                    $name = htmlentities(utf8_encode($row_item[0]));
+                    $clan_list[] = (object)array(
+                        'name' => str_replace('&nbsp;', ' ', $name),
+                        'rank' => $row_item[1],
+                        'clan_xp' => $row_item[2],
+                        'clan_kills' => $row_item[3]
+                    );
+                }
             }
+            return $clan_list;
+        }else{
+            return 'CLAN NOT FOUND';
         }
-        return $clan_list;
     }
 
     /**
@@ -206,16 +217,20 @@ Class Rue {
     public function get_clan_list_light($clan_name){
         $url = 'http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName='.$this->normalize_clan_name($clan_name);
         $result = $this->get_url($url);
-        $clan_list = array();
-        $result = explode("\n", $result);
-        foreach($result as $key => $row){
-            if($key != 0 && $key <= (count($result)-2)){
-                $row_item = explode(",", $row);
-                $name = htmlentities(utf8_encode($row_item[0]));
-                array_push($clan_list, str_replace('&nbsp;', ' ', $name));
+        if($result != false){
+            $clan_list = array();
+            $result = explode("\n", $result);
+            foreach($result as $key => $row){
+                if($key != 0 && $key <= (count($result)-2)){
+                    $row_item = explode(",", $row);
+                    $name = htmlentities(utf8_encode($row_item[0]));
+                    array_push($clan_list, str_replace('&nbsp;', ' ', $name));
+                }
             }
+            return $clan_list;
+        }else{
+            return 'CLAN NOT FOUND';
         }
-        return $clan_list;
     }
 
     /*
@@ -307,28 +322,32 @@ Class Rue {
      */
     public function get_multi_details($name_list, $logged_in = false){
 
-        foreach($name_list as &$name){
-            $name = $this->normalize_name($name);
-        }
-
-        $comb_array = array();
-        if(count($name_list) > 99){
-            $chunked = array_chunk($name_list, 99, false);
-            foreach($chunked as $sub_array){
-                $list = json_encode($sub_array);
-                $playerdetails_url = 'http://services.runescape.com/m=website-data/playerDetails.ws?membership=true&names='.$list.'&callback=angular.callbacks._0';
-                $result = $this->get_url($playerdetails_url, $logged_in);             
-                $result = $this->trim_rm_callback($result);
-                $comb_array = array_merge($comb_array, (array)$result);
+        if ((array)$name_list !== $name_list ) { 
+            return "INVALID NAME LIST";
+        } else { 
+            foreach($name_list as &$name){
+               $name = $this->normalize_name($name);
             }
-        }else{
-            $list = json_encode($name_list);
-            $playerdetails_url = 'http://services.runescape.com/m=website-data/playerDetails.ws?membership=true&names='.$list.'&callback=angular.callbacks._0';
-            $result = $this->get_url($playerdetails_url, $logged_in);
-            $result = $this->trim_rm_callback($result);
-            $comb_array = $result;
-        }
-        return $comb_array;
+
+            $comb_array = array();
+            if(count($name_list) > 99){
+                $chunked = array_chunk($name_list, 99, false);
+                foreach($chunked as $sub_array){
+                    $list = json_encode($sub_array);
+                    $playerdetails_url = 'http://services.runescape.com/m=website-data/playerDetails.ws?membership=true&names='.$list.'&callback=angular.callbacks._0';
+                    $result = $this->get_url($playerdetails_url, $logged_in);             
+                    $result = $this->trim_rm_callback($result);
+                    $comb_array = array_merge($comb_array, (array)$result);
+                }
+            }else{
+                $list = json_encode($name_list);
+                $playerdetails_url = 'http://services.runescape.com/m=website-data/playerDetails.ws?membership=true&names='.$list.'&callback=angular.callbacks._0';
+                $result = $this->get_url($playerdetails_url, $logged_in);
+                $result = $this->trim_rm_callback($result);
+                $comb_array = $result;
+            }
+            return $comb_array;
+        } 
     }
 
     /*
