@@ -123,6 +123,15 @@ Class Rue {
         return $url;
     }
 
+    public function get_player_outfit($player_name){
+        $url = 'http://services.runescape.com/m=avatar-rs/'.$this->normalize_name($player_name).'/appearance.dat';
+        $appearance_string = $this->get_url($url);
+
+        $details_url = 'http://services.runescape.com/m=adventurers-log/avatardetails.json?details='.$appearance_string;
+        $result = $this->get_url($details_url);
+        return json_decode($result);
+    }
+
     /*
      *  Hiscores (legacy, use Runemetrics)
      */
@@ -133,9 +142,31 @@ Class Rue {
      * @return array
      */
     public function get_player_hiscores($player_name){
+        $subject_list = ["Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction", "Summoning", "Dungeoneering", "Divination", "Invention", "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A. Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest"];
         $url = 'http://services.runescape.com/m=hiscore/index_lite.ws?player='.$this->normalize_name($player_name);
-        $result = str_getcsv($this->get_url($url));
-        return (object)$result;
+        $result = $this->get_url($url);
+        $list = array();
+        $result = explode("\n", $result);
+        foreach($result as $key => $row){
+            if($key < (count($result)-1)){
+                $row_items = explode(",", $row);
+                if($key < 28){
+                    $list[] = (object)array(
+                        'name' => $subject_list[$key],
+                        'rank' => $row_items[0],
+                        'level' => $row_items[1],
+                        'experience' => $row_items[2]
+                    );
+                }else{
+                    $list[] = (object)array(
+                        'name' => $subject_list[$key],
+                        'rank' => $row_items[0],
+                        'value' => $row_items[1]
+                    );
+                }
+            }
+        }
+        return $list;
     }
 
     /*

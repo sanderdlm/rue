@@ -6,9 +6,9 @@ $r = new Rue();
 //optional dependency;enables the use of session tokens
 $r->setPug("pugemail@gmail.com", "pugpassword", "pugname");
 
-$demo = $r->get_player_details("Chet Faker", true);
+$demo = $r->get_player_details("Snow Faker", true);
 
 echo "<pre>";
-var_dump($demo);
+print_r($demo);
 echo "</pre>";
 ?>
