@@ -61,4 +61,4 @@ I'll be adding more stuff like the legacy Hiscore API, Bestiary and any other en
 If you have any, please let me know.
 
 ### Contact
-You can contact me on [Twitter](https://twitter.com/) for all questions.
+The easiest way to contact me about this is through Twitter: [@RSChetFaker](https://twitter.com/RSChetFaker).
