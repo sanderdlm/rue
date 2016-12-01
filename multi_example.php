@@ -3,8 +3,8 @@ require_once 'rue.php';
 
 $r = new Rue();
 
-$list = $r->get_clan_list_light("Shuu Zone");
-$demo = $r->get_multi_activity($list);
+$clan_list = $r->get_clan_list_light("Wrack City");
+$demo = $r->get_multi_details($clan_list, true);
 
 echo "<pre>";
 print_r($demo);

@@ -55,7 +55,8 @@ $demo = $r->get_multi_details($clan_list, true);
 That's what it currently does. All the functions are documented inside the class, so you can take a look there if there is any confusion.
 
 ###To do
-I'll be adding more stuff like the legacy Hiscore API, Bestiary and any other endpoint I can find in Runemetrics.
+
+* Add the Bestiary links
 
 ### Issues/suggestions
 If you have any, please let me know.
