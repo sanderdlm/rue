@@ -14,7 +14,8 @@ Class Rue {
     private $_pugLogin;
     private $_pugPassword;
     private $_sessionToken;
-    private $_rcx;
+    private $_maxConcurrent = 50; //max. number of simultaneous connections allowed
+    public $requests = []; //request_queue
     private $_multi_container;
 
     /*
@@ -23,10 +24,6 @@ Class Rue {
 
     function __construct() {
         $this->curl = curl_init();
-    }
-
-    public function setMulti(RollingCurlX $rcx){
-        $this->_rcx = $rcx;
     }
 
     public function setPug($email, $password, $username){
@@ -60,12 +57,6 @@ Class Rue {
         $string = htmlentities($string);
         $string = str_replace(' ', '+', $string);
         return $string;
-    }
-
-    private function multi_check(){
-        if(!isset($this->_rcx)){
-            exit('RollingCurlX class not found - multi methods are not enabled unless you inject this class - https://github.com/marcushat/RollingCurlX');
-        }
     }
 
     /**
@@ -178,7 +169,7 @@ Class Rue {
      * Multi functions
      */
 
-    public function activity_callback($response, $url, $request_info, $user_data, $time) {
+    public function activity_callback($response, $url, $request_info, $user_data) {
 
         if($request_info['http_code'] == 200){
             $content = json_decode($response);  
@@ -191,7 +182,7 @@ Class Rue {
         }
     }
 
-    public function skills_callback($response, $url, $request_info, $user_data, $time) {
+    public function skills_callback($response, $url, $request_info, $user_data) {
 
         if($request_info['http_code'] == 200){
             $content = json_decode($response);   
@@ -210,7 +201,6 @@ Class Rue {
      * @return array - the provided list with activity logs added per member
      */
     public function get_multi_activity($name_list){
-        $this->multi_check();
 
         $req_count = count($name_list);
 
@@ -222,10 +212,10 @@ Class Rue {
             $user_data = [$player_name, $i, $req_count];
             $options = [CURLOPT_SSL_VERIFYPEER => FALSE, CURLOPT_SSL_VERIFYHOST => FALSE];
             $headers = ['Referer: https://apps.runescape.com/runemetrics/'];
-            $this->_rcx->addRequest($url, $post_data, array($this, 'activity_callback'), $user_data, $options, $headers);
+            $this->addRequest($url, $post_data, array($this, 'activity_callback'), $user_data, $options, $headers);
         }
 
-        $this->_rcx->execute();
+        $this->execute();
         return $this->_multi_container;
     }
 
@@ -235,7 +225,6 @@ Class Rue {
      * @return array - the provided list with skills added per member
      */
     public function get_multi_skills($name_list){
-        $this->multi_check();
 
         $req_count = count($name_list);
 
@@ -247,10 +236,10 @@ Class Rue {
             $user_data = [$player_name, $i, $req_count];
             $options = [CURLOPT_SSL_VERIFYPEER => FALSE, CURLOPT_SSL_VERIFYHOST => FALSE];
             $headers = ['Referer: https://apps.runescape.com/runemetrics/'];
-            $this->_rcx->addRequest($url, $post_data, array($this, 'skills_callback'), $user_data, $options, $headers);
+            $this->addRequest($url, $post_data, array($this, 'skills_callback'), $user_data, $options, $headers);
         }
 
-        $this->_rcx->execute();
+        $this->execute();
         return $this->_multi_container;
     }
 
@@ -287,6 +276,9 @@ Class Rue {
         return $comb_array;
     }
 
+    /*
+     *  cUrl, multi_curl and session token wrappers
+     */
 
     /**
      * Generate a new runescape.com session token
@@ -392,6 +384,169 @@ Class Rue {
         }else{
             return false;
         }
+    }
+
+    /**
+     * Add a request to the request qeue
+     * @param string $clan_name
+     * @return int - request index
+     */
+    private function addRequest($url, $post_data = NULL, callable $callback = NULL, $user_data = NULL, array $options = NULL, array $headers = NULL){
+        $this->requests[] = [
+            'url' => $url,
+            'post_data' => $post_data,
+            'callback' => ($callback) ? $callback : $this->_callback,
+            'user_data' => ($user_data) ? $user_data : NULL,
+            'options' => ($options) ? $options : NULL,
+            'headers' => ($headers) ? $headers : NULL
+        ];
+        return count($this->requests) - 1;
+    }
+
+    /**
+     * Reset the request qeue
+     */
+    private function reset() {
+        $this->requests = [];
+    }
+
+    /**
+     * Execute the request qeue
+     */
+    private function execute() {
+        if(count($this->requests) < $this->_maxConcurrent) {
+            $this->_maxConcurrent = count($this->requests);
+        }
+        //the request map that maps the request queue to request curl handles
+        $requests_map = [];
+        $multi_handle = curl_multi_init();
+
+        //start processing the initial request queue
+        for($i = 0; $i < $this->_maxConcurrent; $i++) {
+            $this->init_request($i, $multi_handle, $requests_map);
+        }
+
+        do{
+            do{
+                $mh_status = curl_multi_exec($multi_handle, $active);
+            } while($mh_status == CURLM_CALL_MULTI_PERFORM);
+            if($mh_status != CURLM_OK) {
+                break;
+            }
+
+            //a request is just completed, find out which one
+            while($completed = curl_multi_info_read($multi_handle)) {
+                $this->process_request($completed, $multi_handle, $requests_map);
+
+                //add/start a new request to the request queue
+                if($i < count($this->requests) && isset($this->requests[$i])) { //if requests left
+                    $this->init_request($i, $multi_handle, $requests_map);
+                    $i++;
+                }
+            }
+
+            usleep(15); //save CPU cycles, prevent continuous checking
+        } while ($active || count($requests_map)); //End do-while
+
+        $this->reset();
+        curl_multi_close($multi_handle);
+    }
+
+    /**
+     * Build individual cURL options for a request
+     * @param array $request
+     * @return array - options
+     */
+    private function buildOptions(array $request) {
+        $url = $request['url'];
+        $post_data = $request['post_data'];
+        $individual_opts = $request['options'];
+        $individual_headers = $request['headers'];
+
+        $options = $individual_opts;
+        $headers = $individual_headers;
+
+        //the below will overide the corresponding default or individual options
+        $options[CURLOPT_RETURNTRANSFER] = true;
+
+        $options[CURLOPT_NOSIGNAL] = 1;
+
+        if($url) {
+            $options[CURLOPT_URL] = $url;
+        }
+
+        if($headers) {
+            $options[CURLOPT_HTTPHEADER] = $headers;
+        }
+
+        // enable POST method and set POST parameters
+        if($post_data) {
+            $options[CURLOPT_POST] = 1;
+            $options[CURLOPT_POSTFIELDS] = is_array($post_data)? http_build_query($post_data) : $post_data;
+        }
+        return $options;
+    }
+
+    /**
+     * Initialize the request and add it to the multi handle
+     * @param integer|curl_multi_init|array
+     */
+    private function init_request($request_num, $multi_handle, &$requests_map) {
+        $request =& $this->requests[$request_num];
+
+        $ch = curl_init();
+        $opts_set = curl_setopt_array($ch, $this->buildOptions($request));
+        if(!$opts_set) {
+            echo 'options not set';
+            exit;
+        }
+        curl_multi_add_handle($multi_handle, $ch);
+
+        //add curl handle of a new request to the request map
+        $ch_hash = (string) $ch;
+        $requests_map[$ch_hash] = $request_num;
+    }
+
+    /**
+     * Read the response data from a completed request
+     * @param array|curl_multi_init|array
+     */
+    private function process_request($completed, $multi_handle, array &$requests_map) {
+        $ch = $completed['handle'];
+        $ch_hash = (string) $ch;
+        $request =& $this->requests[$requests_map[$ch_hash]]; //map handler to request index to get request info
+
+        $request_info = curl_getinfo($ch);
+        $request_info['curle'] = $completed['result'];
+        $request_info['handle'] = $ch;
+        $request_info['url_raw'] = $url = $request['url'];
+        $request_info['user_data'] = $user_data = $request['user_data'];
+
+        if(curl_errno($ch) !== 0 || intval($request_info['http_code']) !== 200) { //if server responded with http error
+            $response = false;
+        } else { //sucessful response
+            $response = curl_multi_getcontent($ch);
+        }
+
+        //get request info
+        $callback = $request['callback'];
+        $options = $request['options'];
+
+        if($response && (isset($this->_options[CURLOPT_HEADER]) || isset($options[CURLOPT_HEADER]))) {
+            $k = intval($request_info['header_size']);
+            $request_info['response_header'] = substr($response, 0, $k);
+            $response = substr($response, $k);
+        }
+
+        //remove completed request and its curl handle
+        unset($requests_map[$ch_hash]);
+        curl_multi_remove_handle($multi_handle, $ch);
+
+        //call the callback function and pass request info and user data to it
+        if($callback) {
+            call_user_func($callback, $response, $url, $request_info, $user_data);
+        }
+        $request = NULL; //free up memory now just incase response was large
     }
 
     public function __destruct(){
