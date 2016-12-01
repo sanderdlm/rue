@@ -62,5 +62,3 @@ If you have any, please let me know.
 
 ### Contact
 You can contact me on [Twitter](https://twitter.com/) for all questions.
-
-http://www.github.com/yakcity/rue
