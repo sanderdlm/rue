@@ -1,5 +1,5 @@
 # Rue
-A simple PHP wrapper for some Runescape endpoints
+A PHP wrapper class that lets you easily grab Runescape related data from various endpoints.
 
 ####License
 MIT
@@ -11,31 +11,29 @@ for PHP 5.4+
 
 ##How to Use
 
-First include and initialize the class.
+To get access to the basic functionality, simply include and initialize the class.
 
 ```php
 require_once 'rue.php';
 $r = new Rue();
 ```
-If you want to use all of the functionality in the class, you also have to set the following options
+That's it.
+
+##Options
+
+If you want to use data like player online status and current world, make a new account **AND** a character on Runescape and enter it's details like this.
 
 ```php
 require_once 'rue.php';
-require_once 'rollingCurl.php';
 
 $r = new Rue();
-
-//Including the RollingCurlX class allows you to use all of the 'multi' methods. 
-//These will use multiple parallel cUrl requests to get data on complete clans/groups quickly. 
-$rcx = new RollingCurlX();
-$r->setMulti($rcx);
 
 //Setting a pug or alt account allows the class to generate session tokens. 
-//Adding a token to your requests will yield extra data with the 'details' methods, like online status and world.
 $r->setPug("pugemail@gmail.com", "pugpassword", "pugname");
 ```
+##Examples
 
-Once you're set up, you can start grabbing data. Some examples:
+Here are a few basic examples. I've also included them as PHP files in the repo.
 ```php
 //Get the last 20 activity logs for a player
 $player_activity = $r->get_player_activity("Zezima");
@@ -52,8 +50,11 @@ $demo = $r->get_multi_activity($clan_list);
 ```
 That's what it currently does. All the functions are documented inside the class, so you can take a look there if there is any confusion.
 
-### Issues
-If you find any issues please let me know.
+###To do
+I'll be adding more stuff like the legacy Hiscore API, Bestiary and any other endpoint I can find in Runemetrics.
+
+### Issues/suggestions
+If you have any, please let me know.
 
 ### Contact
 You can contact me on [Twitter](https://twitter.com/) for all questions.
