@@ -17,7 +17,7 @@ Class Rue {
     private $_maxConcurrent = 10;
     private $_multi_container;
     private $requests = [];
-    public $call_info = [];
+    public $request_data = [];
 
     /*
      *  Constructor & dependency injection functions
@@ -25,9 +25,11 @@ Class Rue {
 
     function __construct() {
         $this->curl = curl_init();
-        $this->call_info['failed'] = 0;
-        $this->call_info['success'] = 0;
-        $this->call_info['fail_rate'] = 0;
+        $this->request_data['total'] = 0;
+        $this->request_data['failed'] = 0;
+        $this->request_data['success'] = 0;
+        $this->request_data['profile_error'] = 0;
+        $this->request_data['success_rate'] = 0;
     }
 
     public function setPug($email, $password, $username){
@@ -198,6 +200,8 @@ Class Rue {
                     "name"=>$user_data[0],
                     "activities"=>$content->activities
                     );
+            }else{
+                $this->request_data['profile_error'] += 1;
             }
         }
     }
@@ -211,6 +215,8 @@ Class Rue {
                     "name"=>$user_data[0],
                     "skills"=>$content->skillvalues
                     );
+            }else{
+                $this->request_data['profile_error'] += 1;
             }
         }
     }
@@ -432,7 +438,8 @@ Class Rue {
      * Execute the request qeue
      */
     private function execute() {
-        $this->call_info['total'] = count($this->requests);
+        $start = microtime(true);
+        $this->request_data['total'] = count($this->requests);
         if(count($this->requests) < $this->_maxConcurrent) {
             $this->_maxConcurrent = count($this->requests);
         }
@@ -468,6 +475,7 @@ Class Rue {
         } while ($active || count($requests_map)); //End do-while
 
         $this->reset();
+        $this->request_data['time'] = round(microtime(true) - $start, 1).'s';
         curl_multi_close($multi_handle);
     }
 
@@ -543,10 +551,10 @@ Class Rue {
 
         if(curl_errno($ch) !== 0 || intval($request_info['http_code']) !== 200) { //if server responded with http error
             $response = false;
-            $this->call_info['failed'] += 1;
+            $this->request_data['failed'] += 1;
         } else { //sucessful response
             $response = curl_multi_getcontent($ch);
-            $this->call_info['success'] += 1;
+            $this->request_data['success'] += 1;
         }
 
         //get request info
@@ -568,7 +576,7 @@ Class Rue {
             call_user_func($callback, $response, $url, $request_info, $user_data);
         }
         $request = NULL; //free up memory now just incase response was large
-        $this->call_info['fail_rate'] = round(($this->call_info['failed']/$this->call_info['total'])*100, 2).'%';
+        $this->request_data['success_rate'] = round(($this->request_data['success']/$this->request_data['total'])*100, 2).'%';
     }
 
     public function __destruct(){
