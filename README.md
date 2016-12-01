@@ -47,6 +47,10 @@ $list = $r->get_clan_list("Wrack City");
 //Get the last 20 activity logs for everyone in an entire clan
 $clan_list = $r->get_clan_list_light("Efficiency Experts");
 $demo = $r->get_multi_activity($clan_list);
+
+//Get a list of all the online members of your clan
+$clan_list = $r->get_clan_list_light("Wrack City");
+$demo = $r->get_multi_details($clan_list);
 ```
 That's what it currently does. All the functions are documented inside the class, so you can take a look there if there is any confusion.
 
