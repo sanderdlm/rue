@@ -68,19 +68,31 @@ Class Rue {
     public function get_player_profile($player_name){
         $url = 'https://apps.runescape.com/runemetrics/profile/profile?user='.$this->normalize_name($player_name).'&activities=20';
         $result = json_decode($this->get_url($url));
-        return $result;
+        if(isset($result->error)){
+            return $result->error;
+        }else{
+            return $result;
+        } 
     }
 
     public function get_player_activity($player_name){
         $url = 'https://apps.runescape.com/runemetrics/profile/profile?user='.$this->normalize_name($player_name).'&activities=20';
         $result = json_decode($this->get_url($url));
-        return $result->activities;
+        if(isset($result->error)){
+            return $result->error;
+        }else{
+            return $result->activities;
+        } 
     }
 
     public function get_player_skills($player_name){
         $url = 'https://apps.runescape.com/runemetrics/profile/profile?user='.$this->normalize_name($player_name).'&activities=20';
         $result = json_decode($this->get_url($url));
-        return $result->skillvalues;
+        if(isset($result->error)){
+            return $result->error;
+        }else{
+            return $result->skillvalues;
+        } 
     }
 
     public function get_player_details($player_name, $logged_in = false){
@@ -93,7 +105,11 @@ Class Rue {
     public function get_player_quests($player_name){
         $url = 'https://apps.runescape.com/runemetrics/quests?user='.$this->normalize_name($player_name);
         $result = json_decode($this->get_url($url));
-        return $result->quests;
+        if(isset($result->error)){
+            return $result->error;
+        }else{
+            return $result->quests;
+        } 
     }
 
     public function get_player_avatar($player_name){
