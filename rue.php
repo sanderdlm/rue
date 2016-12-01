@@ -14,9 +14,10 @@ Class Rue {
     private $_pugLogin;
     private $_pugPassword;
     private $_sessionToken;
-    private $_maxConcurrent = 50; //max. number of simultaneous connections allowed
-    public $requests = []; //request_queue
+    private $_maxConcurrent = 10;
     private $_multi_container;
+    private $requests = [];
+    public $call_info = [];
 
     /*
      *  Constructor & dependency injection functions
@@ -24,6 +25,9 @@ Class Rue {
 
     function __construct() {
         $this->curl = curl_init();
+        $this->call_info['failed'] = 0;
+        $this->call_info['success'] = 0;
+        $this->call_info['fail_rate'] = 0;
     }
 
     public function setPug($email, $password, $username){
@@ -219,7 +223,6 @@ Class Rue {
     public function get_multi_activity($name_list){
 
         $req_count = count($name_list);
-
         for($i=0;$i<=$req_count-1;$i++){
             $name = $name_list[$i];
             $player_name = $this->normalize_name($name);
@@ -230,7 +233,7 @@ Class Rue {
             $headers = ['Referer: https://apps.runescape.com/runemetrics/'];
             $this->addRequest($url, $post_data, array($this, 'activity_callback'), $user_data, $options, $headers);
         }
-
+ 
         $this->execute();
         return $this->_multi_container;
     }
@@ -266,7 +269,6 @@ Class Rue {
      * @return array - the provided list with details added per member
      */
     public function get_multi_details($name_list, $logged_in = false){
-        $this->multi_check();
 
         foreach($name_list as &$name){
             $name = $this->normalize_name($name);
@@ -430,6 +432,7 @@ Class Rue {
      * Execute the request qeue
      */
     private function execute() {
+        $this->call_info['total'] = count($this->requests);
         if(count($this->requests) < $this->_maxConcurrent) {
             $this->_maxConcurrent = count($this->requests);
         }
@@ -540,8 +543,10 @@ Class Rue {
 
         if(curl_errno($ch) !== 0 || intval($request_info['http_code']) !== 200) { //if server responded with http error
             $response = false;
+            $this->call_info['failed'] += 1;
         } else { //sucessful response
             $response = curl_multi_getcontent($ch);
+            $this->call_info['success'] += 1;
         }
 
         //get request info
@@ -563,6 +568,7 @@ Class Rue {
             call_user_func($callback, $response, $url, $request_info, $user_data);
         }
         $request = NULL; //free up memory now just incase response was large
+        $this->call_info['fail_rate'] = round(($this->call_info['failed']/$this->call_info['total'])*100, 2).'%';
     }
 
     public function __destruct(){
