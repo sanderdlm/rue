@@ -64,7 +64,7 @@ All the functions are documented inside the class, so you can take a look there 
 
 * Add the Bestiary links
 * Add more of the old API links like Ironman rankings and HCIM rankings
-* idk?
+* idk??
 
 ### Issues/suggestions
 If you have any, please let me know.
