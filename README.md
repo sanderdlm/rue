@@ -1,5 +1,11 @@
 # Rue
-A PHP wrapper class that lets you easily grab Runescape related data from various endpoints.
+Rue is a PHP class that attempts to be an easy and accessible interface for all of the possible Runescape web service endpoints. It aims to combine the older API, the new Runemetrics URLs and a few other endpoints that can be found on runescape.com. 
+
+The class also has a multi_curl wrapper built in. This makes it easy to take single player functions, like grabbing a player's experience in a certain skill, and apply them to an entire clan. A situation where this might come in handy is automating a clan's skilling competition.
+
+Lastly, I also provided a way to simulate web logins to runescape.com and use the generated session token as a cookie to grab more data from certain endpoints. By doing this you can get data like player online status and current world.
+
+If you have any suggestions or ideas that I could add, contact me on [@RSChetFaker](https://twitter.com/RSChetFaker) and I'll see what I can do.
 
 ####License
 MIT
@@ -21,7 +27,7 @@ That's it.
 
 ##Options
 
-If you want to use data like player online status and current world, make a new account **AND** a character on Runescape and enter it's details like this.
+If you want to use data like player online status and current world, make a new account **AND** create a character on that account. Once the character exists, enter it's details like this.
 
 ```php
 require_once 'rue.php';
@@ -52,11 +58,13 @@ $demo = $r->get_multi_activity($clan_list);
 $clan_list = $r->get_clan_list_light("Wrack City");
 $demo = $r->get_multi_details($clan_list, true);
 ```
-That's what it currently does. All the functions are documented inside the class, so you can take a look there if there is any confusion.
+All the functions are documented inside the class, so you can take a look there if there is any confusion.
 
 ###To do
 
 * Add the Bestiary links
+* Add more of the old API links like Ironman rankings and HCIM rankings
+* idk?
 
 ### Issues/suggestions
 If you have any, please let me know.
