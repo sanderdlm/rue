@@ -17,6 +17,7 @@ Class Rue {
     private $_maxConcurrent = 10;
     private $_multi_container;
     private $requests = [];
+    private $skill_list = ["Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction", "Summoning", "Dungeoneering", "Divination", "Invention", "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A. Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest"];
     public $request_data = [];
 
     /*
@@ -144,9 +145,20 @@ Class Rue {
      * @param string $player_name
      * @return array
      */
-    public function get_player_hiscores($player_name){
-        $subject_list = ["Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction", "Summoning", "Dungeoneering", "Divination", "Invention", "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A. Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest"];
-        $url = 'http://services.runescape.com/m=hiscore/index_lite.ws?player='.$this->normalize_name($player_name);
+    public function get_player_hiscores($player_name, $type = false){
+        
+        if(isset($type) && $type != false){
+            if($type == 'IM'){
+                $url = 'http://services.runescape.com/m=hiscore_ironman/index_lite.ws?player='.$this->normalize_name($player_name);
+            }elseif($type == 'HCIM'){
+                $url = 'http://services.runescape.com/m=hiscore_hardcore_ironman/index_lite.ws?player='.$this->normalize_name($player_name);
+            }else{
+                return 'INVALID TYPE';
+            }
+        }else{
+            $url = 'http://services.runescape.com/m=hiscore/index_lite.ws?player='.$this->normalize_name($player_name);
+        }
+
         $result = $this->get_url($url);
         if($result != false){
             $list = array();
@@ -156,14 +168,14 @@ Class Rue {
                     $row_items = explode(",", $row);
                     if($key < 28){
                         $list[] = (object)array(
-                            'name' => $subject_list[$key],
+                            'name' => $this->skill_list[$key],
                             'rank' => $row_items[0],
                             'level' => $row_items[1],
                             'experience' => $row_items[2]
                         );
                     }else{
                         $list[] = (object)array(
-                            'name' => $subject_list[$key],
+                            'name' => $this->skill_list[$key],
                             'rank' => $row_items[0],
                             'value' => $row_items[1]
                         );
