@@ -246,6 +246,54 @@ Class Rue {
     }
 
     /*
+     *  Items
+     */
+
+    /**
+     * Grab a member list for the given clan name with only names
+     * @param string $clan_name
+     * @return array
+     */
+    public function get_item_info($item_id){
+        $url = 'http://services.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item='.$item_id;
+        $result = json_decode($this->get_url($url));
+        if($result != false){
+            return $result->item;
+        }else{
+            return 'ITEM NOT FOUND';
+        }
+    }
+
+    public function items_callback($response, $url, $request_info, $user_data) {
+
+        if($request_info['http_code'] == 200){
+            $content = json_decode($response);  
+            if($content != false){
+                $this->_multi_container[] = $content->item;
+            }
+        }else{
+            $this->_multi_container[] = 'ITEM NOT FOUND';
+        }
+    }
+
+    public function get_multi_items($item_list){
+
+        $req_count = count($item_list);
+        for($i=0;$i<=$req_count-1;$i++){
+            $item_id = $item_list[$i];
+            $url = 'http://services.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item='.$item_id;
+            $post_data = NULL;
+            $user_data = [$item_id, $i, $req_count];
+            $options = [CURLOPT_SSL_VERIFYPEER => FALSE, CURLOPT_SSL_VERIFYHOST => FALSE];
+            $headers = ['Referer: https://apps.runescape.com/runemetrics/'];
+            $this->addRequest($url, $post_data, array($this, 'items_callback'), $user_data, $options, $headers);
+        }
+ 
+        $this->execute();
+        return $this->_multi_container;
+    }
+
+    /*
      * Multi functions
      */
 
@@ -261,6 +309,8 @@ Class Rue {
             }else{
                 $this->request_data['profile_error'] += 1;
             }
+        }else{
+            $this->_multi_container[] = 'PLAYER NOT FOUND';
         }
     }
 
@@ -276,6 +326,8 @@ Class Rue {
             }else{
                 $this->request_data['profile_error'] += 1;
             }
+        }else{
+            $this->_multi_container[] = 'PLAYER NOT FOUND';
         }
     }
     
