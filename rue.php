@@ -14,7 +14,7 @@ Class Rue {
     private $_pugLogin;
     private $_pugPassword;
     private $_sessionToken;
-    private $_maxConcurrent = 10;
+    private $_maxConcurrent = 5;
     private $_multi_container;
     private $requests = [];
     private $skill_list = ["Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction", "Summoning", "Dungeoneering", "Divination", "Invention", "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A. Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest"];
@@ -297,6 +297,27 @@ Class Rue {
      * Multi functions
      */
 
+    public function profile_callback($response, $url, $request_info, $user_data) {
+
+        if($request_info['http_code'] == 200){
+            $content = json_decode($response);  
+            if(!isset($content->error)){
+                $this->_multi_container[] = (object)array(
+                    "name"=>$user_data[0],
+                    "profile"=>$content
+                    );
+            }else{
+                $this->_multi_container[] = (object)array(
+                    "name"=>$user_data[0],
+                    "profile"=>$content->error
+                    );
+                $this->request_data['profile_error'] += 1;
+            }
+        }else{
+            $this->_multi_container[] = 'PLAYER NOT FOUND';
+        }
+    }
+
     public function activity_callback($response, $url, $request_info, $user_data) {
 
         if($request_info['http_code'] == 200){
@@ -307,6 +328,10 @@ Class Rue {
                     "activities"=>$content->activities
                     );
             }else{
+                $this->_multi_container[] = (object)array(
+                    "name"=>$user_data[0],
+                    "activities"=>$content->error
+                    );
                 $this->request_data['profile_error'] += 1;
             }
         }else{
@@ -324,11 +349,38 @@ Class Rue {
                     "skills"=>$content->skillvalues
                     );
             }else{
+                $this->_multi_container[] = (object)array(
+                    "name"=>$user_data[0],
+                    "skills"=>$content->error
+                    );
                 $this->request_data['profile_error'] += 1;
             }
         }else{
             $this->_multi_container[] = 'PLAYER NOT FOUND';
         }
+    }
+
+    /**
+     * Grab Runemetrics profile for each player in a list
+     * @param array $name_list
+     * @return array - the provided list with activity logs added per member
+     */
+    public function get_multi_profile($name_list){
+
+        $req_count = count($name_list);
+        for($i=0;$i<=$req_count-1;$i++){
+            $name = $name_list[$i];
+            $player_name = $this->normalize_name($name);
+            $url = 'https://apps.runescape.com/runemetrics/profile/profile?user='.$player_name.'&activities=20';
+            $post_data = NULL;
+            $user_data = [$player_name, $i, $req_count];
+            $options = [CURLOPT_SSL_VERIFYPEER => FALSE, CURLOPT_SSL_VERIFYHOST => FALSE];
+            $headers = ['Referer: https://apps.runescape.com/runemetrics/'];
+            $this->addRequest($url, $post_data, array($this, 'profile_callback'), $user_data, $options, $headers);
+        }
+    
+        $this->execute();
+        return $this->_multi_container;
     }
     
     /**
