@@ -7,7 +7,7 @@ Lastly, I also provided a way to simulate web logins to runescape.com and use th
 
 If you have any suggestions or ideas that I could add, contact me on [@RSChetFaker](https://twitter.com/RSChetFaker) and I'll see what I can do.
 
-####License
+#### License
 MIT
 
 #### Version
@@ -15,7 +15,7 @@ MIT
 
 for PHP 5.4+
 
-##How to Use
+## How to Use
 
 To get access to the basic functionality, simply include and initialize the class.
 
@@ -25,7 +25,7 @@ $r = new Rue();
 ```
 That's it.
 
-##Options
+## Options
 
 If you want to use data like player online status and current world, make a new account **AND** create a character on that account. Once the character exists, enter it's details like this.
 
@@ -37,7 +37,7 @@ $r = new Rue();
 //Setting a pug or alt account allows the class to generate session tokens. 
 $r->setPug("pugemail@gmail.com", "pugpassword", "pugname");
 ```
-##Examples
+## Examples
 
 Here are a few basic examples. I've also included them as PHP files in the repo.
 ```php
@@ -60,7 +60,7 @@ $demo = $r->get_multi_details($clan_list, true);
 ```
 All the functions are documented inside the class, so you can take a look there if there is any confusion.
 
-###To do
+### To do
 
 * Add the Bestiary links
 * Add more of the old API links like Ironman rankings and HCIM rankings
