@@ -5,7 +5,7 @@
  */
 
 require_once '../rue.php';
-$r = new Rue();
+$r = new \Rue\rs_api();
 
 //get_clan_list_light returns a name-only list of clan members sorted by rank
 $clan_list = $r->get_clan_list_light("Wrack City");

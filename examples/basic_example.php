@@ -5,7 +5,7 @@
  */
 
 require_once '../rue.php';
-$r = new Rue();
+$r = new \Rue\rs_api();
 
 $demo = $r->get_player_profile("Chet Faker");
 

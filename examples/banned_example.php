@@ -10,10 +10,10 @@
  */
 
 require_once '../rue.php';
-$r = new Rue();
+$r = new \Rue\rs_api();
 
 //setting the alt account to authenticate your requests with is required for this example to work
-$r->setPug("yourpugemail@gmail.com", "yourpugpassword", "yourpugname");
+$r->set_pug("yourpugemail@gmail.com", "yourpugpassword", "yourpugname");
 
 //set the clan name
 $clan_name = "Raccoons";

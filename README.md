@@ -1,11 +1,11 @@
 # Rue
-Rue is a PHP class that attempts to be an easy and accessible interface for all of the possible Runescape web service endpoints. It aims to combine the older API, the new Runemetrics URLs and a few other endpoints that can be found on runescape.com. 
+Rue is a PHP library that attempts to be an easy-to-use wrapper for all of the possible Runescape web service endpoints. It aims to combine the older API, the new Runemetrics URLs and a few other endpoints that can be found on runescape.com. 
 
 The class also has a multi_curl wrapper built in. This makes it easy to take single player functions, like grabbing a player's experience in a certain skill, and apply them to an entire clan. A situation where this might come in handy is automating a clan's skilling competition.
 
-Lastly, I also provided a way to simulate web logins to runescape.com and use the generated session token as a cookie to grab more data from certain endpoints. By doing this you can get data like player online status and current world.
+Rue can also simulate web logins to runescape.com and use the generated session token as a cookie to get more data from certain endpoints. By doing this you can get data like player online status and current world.
 
-If you have any suggestions or ideas that I could add, contact me on [@RSChetFaker](https://twitter.com/RSChetFaker) and I'll see what I can do.
+If you have any suggestions or ideas that I could add, contact me on [@dreadnip](https://twitter.com/dreadnip) and I'll see what I can do.
 
 #### License
 MIT
@@ -21,7 +21,7 @@ To get access to the basic functionality, simply include and initialize the clas
 
 ```php
 require_once 'rue.php';
-$r = new Rue();
+$r = new \Rue\rs_api();
 ```
 That's it.
 
@@ -32,10 +32,10 @@ If you want to use data like player online status and current world, make a new 
 ```php
 require_once 'rue.php';
 
-$r = new Rue();
+$r = new \Rue\rs_api();
 
 //Setting a pug or alt account allows the class to generate session tokens. 
-$r->setPug("pugemail@gmail.com", "pugpassword", "pugname");
+$r->set_pug("pugemail@gmail.com", "pugpassword", "pugname");
 ```
 ## Examples
 

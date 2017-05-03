@@ -1,15 +1,17 @@
 <?php
 /*
-        ---------- Rue 1.0.0 -----------
+        -------------- Rue  ---------------
         An easier way to pull data from the
         Runemetrics & Runescape end-points.
 
-            Copyright (c) 2016 @RSChetFaker
+            Copyright (c) 2016 @dreadnip
                     License: MIT
-        https://github.com/chetfakerrs/Rue
+        https://github.com/dreadnip/rue
 */  
 
-Class Rue {
+namespace Rue;
+
+Class rs_api {
     private $_pugName;
     private $_pugLogin;
     private $_pugPassword;
@@ -33,7 +35,7 @@ Class Rue {
         $this->request_data['success_rate'] = 0;
     }
 
-    public function setPug($email, $password, $username){
+    public function set_pug($email, $password, $username){
         $this->_pugName = $username;
         $this->_pugLogin = $email;
         $this->_pugPassword = $password;
