@@ -70,4 +70,4 @@ All the functions are documented inside the class, so you can take a look there 
 If you have any, please let me know.
 
 ### Contact
-The easiest way to contact me about this is through Twitter: [@RSChetFaker](https://twitter.com/RSChetFaker).
+The easiest way to contact me about this is through Twitter: [@dreadnip](https://twitter.com/dreadnip).
