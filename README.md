@@ -1,11 +1,11 @@
+2022 edit: There is a newer library called [Flo](https://github.com/dreadnip/flo/blob/master/src/Flo.php) that uses Symfony HttpClient, which should be more stable than this one. I don't think I ported all of the features though, but you should still use it over this old piece of junk.
+
 # Rue
 Rue is a PHP library that attempts to be an easy-to-use wrapper for all of the possible Runescape web service endpoints. It aims to combine the older API, the new Runemetrics URLs and a few other endpoints that can be found on runescape.com. 
 
 The class also has a multi_curl wrapper built in. This makes it easy to take single player functions, like grabbing a player's experience in a certain skill, and apply them to an entire clan. A situation where this might come in handy is automating a clan's skilling competition.
 
 Rue can also simulate web logins to runescape.com and use the generated session token as a cookie to get more data from certain endpoints. By doing this you can get data like player online status and current world.
-
-If you have any suggestions or ideas that I could add, contact me on [@dreadnip](https://twitter.com/dreadnip) and I'll see what I can do.
 
 #### License
 MIT
@@ -68,6 +68,3 @@ All the functions are documented inside the class, so you can take a look there 
 
 ### Issues/suggestions
 If you have any, please let me know.
-
-### Contact
-The easiest way to contact me about this is through Twitter: [@dreadnip](https://twitter.com/dreadnip).
